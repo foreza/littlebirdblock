@@ -3,73 +3,69 @@ package com.vartyr.littlebirdblock;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
+import com.vartyr.littlebirdblock.models.DailyGratitudeObject;
 import com.vartyr.littlebirdblock.utils.logger;
 
 
-public class LoggedInActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
     FirebaseFirestore db = null;
-
-
-    public class DailyGratitudeObject {
-        String text = "";
-        String date_added = util_getCurrentTimeStampAsString();
-        String date_last_modified = util_getCurrentTimeStampAsString();
-
-        // default constructor
-        public DailyGratitudeObject(String t){
-            text = t;
-        }
-
-        public Map<String, Object> CreateAndReturnObjectMapFromObject(){
-            Map<String, Object> gratObj = new HashMap<>();
-            gratObj.put("text", text);
-            gratObj.put("date_added", date_added);
-            gratObj.put("date_last_modified", date_last_modified);
-            gratObj.put("user_id", "rhyEHzVbVSXbnxAnsdrZ3CVqseJ3"); // TODO: hardcoded user_id, change later
-            return gratObj;
-        }
-    }
-
-    // TODO: Move all util methods into their own class
-    private static String util_getCurrentTimeStampAsString(){
-        return String.valueOf(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_logged_in);
+        setContentView(R.layout.activity_main);
         doConnectDB();
     }
 
+    // TODO: put this in a "session manager"
+    public void handleUserSignOut(){
+        // get out of the firebase instance
+        FirebaseAuth.getInstance().signOut();
 
+        // take them back to login page
+        // TODO: create some navigation singleton / manager class
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    //region UI Interactions
+    public void press_logout(View view) {
+        handleUserSignOut();
+    }
 
     public void testAdd(View view) {
         logger.simplelog("testing addition");
         test_addNewObject();
     }
 
+    //endregion
 
+    //region Gratitude Object CRUD
+
+    // test - Add Object into DB
     public void test_addNewObject(){
         doInsertNewGratitudeIntoDB(
                 doCreateNewGratitudeObject("testobject, im geeling food today"));
     }
 
+    private DailyGratitudeObject doCreateNewGratitudeObject(String text){
+        // TODO: Obviously put more stuff in the constructor, right?
+        return new DailyGratitudeObject(text);
+    }
+
+
+    // TODO: Create a separate class for handling DB connections
     private void doConnectDB(){
         // TODO: Use something else in the near future
         if (db == null) {
@@ -81,11 +77,6 @@ public class LoggedInActivity extends AppCompatActivity {
     // TODO: Will retrieve all the gratitudes for a specific user id
     private void getAllGratitudeObjectFromDBForUserGivenUID() {
 
-    }
-
-    private DailyGratitudeObject doCreateNewGratitudeObject(String text){
-        // TODO: Obviously put more stuff in the constructor, right?
-        return new DailyGratitudeObject(text);
     }
 
 
@@ -112,4 +103,8 @@ public class LoggedInActivity extends AppCompatActivity {
 
 
     }
+
+    //endregion
+
+
 }

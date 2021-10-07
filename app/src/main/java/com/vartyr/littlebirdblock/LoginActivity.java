@@ -19,13 +19,22 @@ import com.vartyr.littlebirdblock.utils.logger;
 import java.util.Arrays;
 import java.util.List;
 
-public class CaptureActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
+
+    FirebaseUser user;  // TODO - create a session manager
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        doLoginForUser();
+        setContentView(R.layout.activity_login);
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user != null) {
+            goToLoggedInPage();
+        } else {
+            doLoginForUser();
+        }
     }
 
 
@@ -87,7 +96,7 @@ public class CaptureActivity extends AppCompatActivity {
 
     private void goToLoggedInPage(){
         // TODO: pass the user UID from firebase authentication so we can pull records for the user
-        Intent intent = new Intent(this, LoggedInActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
 
