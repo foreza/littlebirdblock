@@ -3,11 +3,9 @@ package com.vartyr.littlebirdblock;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.motion.widget.Debug;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
@@ -16,22 +14,18 @@ import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import com.vartyr.littlebirdblock.utils.logger;
+
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class CaptureActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         doLoginForUser();
-    }
-
-
-    // TODO: Move this logger into a utils class and make it better
-    public void log(String msg) {
-        Log.d("Test", msg);
     }
 
 
@@ -47,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void doLoginForUser(){
-        log("beginning login for user");
+        logger.simplelog("beginning login for user");
 
         // TODO: experiment with all the different types of authentication
         // In the case of oath/sso, can we still get the email and/or phone number?
@@ -76,10 +70,9 @@ public class MainActivity extends AppCompatActivity {
         if (result.getResultCode() == RESULT_OK) {
             // Successfully signed in
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            log("User successfully signed in: " + user.getEmail());
+            logger.simplelog("User successfully signed in: " + user.getEmail());
 
             // TODO: Do a call to some ATS SDK with the email/phone/etc from the user
-
             goToLoggedInPage();
         } else {
             // Sign in failed. If response is null the user canceled the
@@ -87,12 +80,13 @@ public class MainActivity extends AppCompatActivity {
             // response.getError().getErrorCode() and handle the error.
             // ...
 
-            log("User NOT signed in: " + response.getError().getErrorCode());
+            logger.simplelog("User NOT signed in: " + response.getError().getErrorCode());
         }
     }
 
 
     private void goToLoggedInPage(){
+        // TODO: pass the user UID from firebase authentication so we can pull records for the user
         Intent intent = new Intent(this, LoggedInActivity.class);
         startActivity(intent);
     }
