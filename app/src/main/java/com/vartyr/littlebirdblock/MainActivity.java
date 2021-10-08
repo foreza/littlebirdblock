@@ -2,19 +2,29 @@ package com.vartyr.littlebirdblock;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.vartyr.littlebirdblock.models.DailyGratitudeObject;
 import com.vartyr.littlebirdblock.utils.logger;
+
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -25,7 +35,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        doConnectDB();
+
+        if (savedInstanceState == null) {
+            doConnectDB();
+            getAllGratitudeObjectFromDBForUserGivenUID();
+        }
+
     }
 
     // TODO: put this in a "session manager"
@@ -47,6 +62,18 @@ public class MainActivity extends AppCompatActivity {
     public void testAdd(View view) {
         logger.simplelog("testing addition");
         test_addNewObject();
+    }
+
+    //endregion
+
+
+    //region Fragment view handing
+    private void createGratitudeViewFragment(ArrayList<String> gratitudeList){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        FragmentGratitudeItemRecyclerView fragment = new FragmentGratitudeItemRecyclerView();
+        fragment.setData(gratitudeList);
+        transaction.replace(R.id.sample_content_fragment, fragment);
+        transaction.commit();
     }
 
     //endregion
@@ -74,9 +101,26 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // TODO: Will retrieve all the gratitudes for a specific user id
+    // TODO: we should kick off a task for this
     private void getAllGratitudeObjectFromDBForUserGivenUID() {
 
+        ArrayList<String> gratitudeEntries = new ArrayList<String>();
+
+        db.collection("daily-gratitude").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot doc : task.getResult()){
+                        String contentString = doc.getString("text");
+                        logger.simplelog("DocumentSnapshot data: " + contentString);
+                        gratitudeEntries.add(contentString);
+                    }
+                    createGratitudeViewFragment(gratitudeEntries);
+                } else {
+                    logger.simplelog("get failed with " + task.getException());
+                }
+            }
+        });
     }
 
 
